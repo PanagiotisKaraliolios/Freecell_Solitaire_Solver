@@ -448,12 +448,52 @@ def findNewNodes(node):
             childNode = Node(node, move, getNextState(node.gameState, move))
             # set newNode depth
             childNode.depth = node.depth + 1
-            # add the new node to the children nodes
-            childrenNodes.append(childNode)
+            # if the child node is not same with other child nodes
+            if not sameChild(childNode, childrenNodes):
+                # add the child node to the children nodes
+                childrenNodes.append(childNode)
             # set the flag to true
             foundFoundationMoves = True
-    if foundFoundationMoves:
+    #if foundFoundationMoves:
+            return childrenNodes
+
+    foundFreecellMoves = False
+    # for each valid move
+    for move in validMoves:
+        # if the move is a freecell move
+        if move.destinationType == Type[1]:
+            # if the move is a freecell move
+            # create a new node
+            childNode = Node(node, move, getNextState(node.gameState, move))
+            # set newNode depth
+            childNode.depth = node.depth + 1
+            # if the child node is not same with other child nodes
+            if not sameChild(childNode, childrenNodes):
+                # add the child node to the children nodes
+                childrenNodes.append(childNode)
+            # set the flag to true
+            foundFreecellMoves = True
+    if foundFreecellMoves:
         return childrenNodes
+
+    foundStackMoves = False
+    # for each valid move
+    for move in validMoves:
+        # if the move is a stack move
+        if move.destinationType == Type[0]:
+            # if the move is a stack move
+            # create a new node
+            childNode = Node(node, move, getNextState(node.gameState, move))
+            # set newNode depth
+            childNode.depth = node.depth + 1
+            # if the child node is not same with other child nodes
+            if not sameChild(childNode, childrenNodes):
+                # add the child node to the children nodes
+                childrenNodes.append(childNode)
+            # set the flag to true
+            foundStackMoves = True
+    # if foundStackMoves:
+    #     return childrenNodes
 
     # for each valid move
     for move in validMoves:
@@ -474,11 +514,15 @@ def findNewNodes(node):
 
 
 # define a function used to check if a child is the same as other children
-def sameChild(child, children):
-    # for each child
-    for otherChild in children:
-        # if the child is the same as the other child
-        if child.move == otherChild.move:
+def sameChild(child, childrenNodes):
+    # for each visited node
+    for otherChild in childrenNodes:
+        # if the visited node has the same game state
+        if isEqual(otherChild.gameState, child.gameState) or isEqualState2(otherChild.gameState,
+                                                                           child.gameState) or otherChild.move == child.move:
+            # if isEqualState2(otherChild.gameState, child.gameState):
+            # if otherChild.move == child.move:
+            # return true
             return True
     # return false
     return False
@@ -488,6 +532,7 @@ def sameChild(child, children):
 def BFS(rootNode):
     # define visited states
     visitedNodes = []
+    visitedStates = []
     # define the queue
     queue = []
 
@@ -502,6 +547,7 @@ def BFS(rootNode):
 
     # add the root node to the visited nodes
     visitedNodes.append(rootNode)
+    visitedStates.append(rootNode.gameState)
 
     # define flag for the loop
     solutionFound = False
@@ -511,11 +557,13 @@ def BFS(rootNode):
     # set an execution time meter
     startTime = time.time()
 
-    maxExecutionTime = 5.0
+    maxExecutionTime = 30.0
 
+    numbrerOfLoops = 0
     # while the queue is not empty or the goal state is not found
-    while len(queue) > 0 or (not solutionFound):
+    while len(queue) > 0 and (not solutionFound):
 
+        numbrerOfLoops += 1
         # get the first state in the queue
         if len(queue) > 0:
             currentNode = queue.pop(0)
@@ -523,21 +571,24 @@ def BFS(rootNode):
             currentNodeDepth = currentNode.depth
             movesMade.append(currentNode.move)
         else:
-            return visitedNodes
+            return movesMade
 
         endTime = time.time()
         executionTime = endTime - startTime
 
         # print current execution time
 
-        # print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
-        #       + "Current depth: " + str(currentNode.depth)
-        #       + " Queue length: " + str(len(queue)), end="\n")
+        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+              + "Current depth: " + str(currentNode.depth)
+              + ". Queue length: " + str(len(queue))
+              + ". Number of visited states: " + str(len(visitedStates))
+              + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
-            print("Execution time exited : " + str(maxExecutionTime) + " minutes\n")
+            print("Execution time exceeded  : " + str(maxExecutionTime) + " minutes\n")
             print("No solution found !!!\n")
+
             # return the visited nodes
             return movesMade
 
@@ -555,7 +606,7 @@ def BFS(rootNode):
 
             # print execution time in seconds
             print("Execution time: " + str(round(executionTime / 60, 1)) + " minutes")
-
+            print(str(numbrerOfLoops) + " loops were made\n")
             # return the visited nodes
             return movesMade
 
@@ -568,7 +619,7 @@ def BFS(rootNode):
                 # for each child node
                 for childNode in childrenNodes:
                     # if the child node is not visited
-                    if not isVisited(visitedNodes, childNode):
+                    if not isVisited(visitedStates, childNode):
                         # add the child node to the queue
                         queue.append(childNode)
                         # add the children to the parent node
@@ -578,6 +629,8 @@ def BFS(rootNode):
 
                         # add the child node to the visited nodes
                         visitedNodes.append(childNode)
+                        # add the child state to the visited states
+                        visitedStates.append(childNode.gameState)
 
     # find the execution time
     endTime = time.time()
@@ -684,11 +737,11 @@ def sameInQueue(queue, node):
 
 
 # check if visited states contains the game state
-def isVisited(visitedNodes, currentNode):
+def isVisited(visitedStates, currentNode):
     # for each visited node
-    for visitedNode in visitedNodes:
+    for visitedState in visitedStates:
         # if the visited node has the same game state
-        if isEqual(visitedNode.gameState, currentNode.gameState) or isEqualState2(visitedNode.gameState, currentNode.gameState):
+        if isEqual(visitedState, currentNode.gameState) or isEqualState2(visitedState, currentNode.gameState):
             # return true
             return True
 
