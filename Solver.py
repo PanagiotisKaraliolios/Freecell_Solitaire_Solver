@@ -5,8 +5,6 @@ import time
 
 from dataclasses import dataclass
 
-from testfixtures import compare
-
 
 # implement breadth first search algorithm to solve a freecell solitaire game. The problem data is read from the ifile and the solution is written to the ofile.
 # The input file contains the initial state of the game and the output file contains the solution.
@@ -513,7 +511,7 @@ def BFS(rootNode):
     # set an execution time meter
     startTime = time.time()
 
-    maxExecutionTime = 30.0
+    maxExecutionTime = 5.0
 
     # while the queue is not empty or the goal state is not found
     while len(queue) > 0 or (not solutionFound):
@@ -538,6 +536,8 @@ def BFS(rootNode):
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
+            print("Execution time exited : " + str(maxExecutionTime) + " minutes\n")
+            print("No solution found !!!\n")
             # return the visited nodes
             return movesMade
 
@@ -756,6 +756,8 @@ if __name__ == '__main__':
 
             # write the moves to the output file
             with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                # write the number of moves made
+                f.write(str(len(movesMade)) + "\n")
                 # if movesMade is not empty
                 if movesMade is not None:
                     # for each move in movesMade
