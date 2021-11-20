@@ -699,7 +699,7 @@ def isVisited(visitedNodes, currentNode):
 if __name__ == '__main__':
 
     if len(sys.argv) != 4:
-        print("Usage: python Exercise0.py <Algorithm> <inputFileName> <outputFilename>")
+        print("Usage: python Solver.py <Algorithm> <inputFileName> <outputFilename>")
         sys.exit(-1)
     else:
         ifile = [line.replace("\n", "").split() for line in open(sys.argv[2], 'r', encoding='utf-8')]
