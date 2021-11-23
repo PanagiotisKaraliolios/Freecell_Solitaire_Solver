@@ -2,8 +2,11 @@ import copy
 import sys
 import threading
 import time
+from multiprocessing import Process
 
 from dataclasses import dataclass
+
+sys.setrecursionlimit(10000)
 
 
 # implement breadth first search algorithm to solve a freecell solitaire game. The problem data is read from the ifile and the solution is written to the ofile.
@@ -274,7 +277,7 @@ class Node:
         self.children = []
         self.gameState = gameState
         self.depth = 0
-        self.nodeNumber = None
+        self.cost = 0
 
     def __eq__(self, other):
         return isEqual(self.gameState, other.gameState)
@@ -425,7 +428,7 @@ def getNextState(currentGameState, move):
     return nextGameState
 
 
-# define the function used to find new nodes and add them to the frontier
+# define the function used to find new nodes
 def findNewNodes(node):
     # get the valid moves
     validMoves = getValidMoves(node.gameState)
@@ -437,61 +440,61 @@ def findNewNodes(node):
     if validMoves is None:
         return None
 
-    foundFoundationMoves = False
+    # foundFoundationMoves = False
+    #
+    # # for each valid move
+    # for move in validMoves:
+    #     # check if at least one is a foundation move
+    #     if move.destinationType == Type[2]:
+    #         # if the move is a foundation move
+    #         # create a new node
+    #         childNode = Node(node, move, getNextState(node.gameState, move))
+    #         # set newNode depth
+    #         childNode.depth = node.depth + 1
+    #         # if the child node is not same with other child nodes
+    #         if not sameChild(childNode, childrenNodes):
+    #             # add the child node to the children nodes
+    #             childrenNodes.append(childNode)
+    #         # set the flag to true
+    #         foundFoundationMoves = True
+    # if foundFoundationMoves:
+    #     return childrenNodes
+    #
+    # foundFreecellMoves = False
+    # # for each valid move
+    # for move in validMoves:
+    #     # if the move is a freecell move
+    #     if move.destinationType == Type[1]:
+    #         # if the move is a freecell move
+    #         # create a new node
+    #         childNode = Node(node, move, getNextState(node.gameState, move))
+    #         # set newNode depth
+    #         childNode.depth = node.depth + 1
+    #         # if the child node is not same with other child nodes
+    #         if not sameChild(childNode, childrenNodes):
+    #             # add the child node to the children nodes
+    #             childrenNodes.append(childNode)
+    #         # set the flag to true
+    #         foundFreecellMoves = True
+    # if foundFreecellMoves:
+    #     return childrenNodes
 
-    # for each valid move
-    for move in validMoves:
-        # check if at least one is a foundation move
-        if move.destinationType == Type[2]:
-            # if the move is a foundation move
-            # create a new node
-            childNode = Node(node, move, getNextState(node.gameState, move))
-            # set newNode depth
-            childNode.depth = node.depth + 1
-            # if the child node is not same with other child nodes
-            if not sameChild(childNode, childrenNodes):
-                # add the child node to the children nodes
-                childrenNodes.append(childNode)
-            # set the flag to true
-            foundFoundationMoves = True
-    #if foundFoundationMoves:
-            return childrenNodes
-
-    foundFreecellMoves = False
-    # for each valid move
-    for move in validMoves:
-        # if the move is a freecell move
-        if move.destinationType == Type[1]:
-            # if the move is a freecell move
-            # create a new node
-            childNode = Node(node, move, getNextState(node.gameState, move))
-            # set newNode depth
-            childNode.depth = node.depth + 1
-            # if the child node is not same with other child nodes
-            if not sameChild(childNode, childrenNodes):
-                # add the child node to the children nodes
-                childrenNodes.append(childNode)
-            # set the flag to true
-            foundFreecellMoves = True
-    if foundFreecellMoves:
-        return childrenNodes
-
-    foundStackMoves = False
-    # for each valid move
-    for move in validMoves:
-        # if the move is a stack move
-        if move.destinationType == Type[0]:
-            # if the move is a stack move
-            # create a new node
-            childNode = Node(node, move, getNextState(node.gameState, move))
-            # set newNode depth
-            childNode.depth = node.depth + 1
-            # if the child node is not same with other child nodes
-            if not sameChild(childNode, childrenNodes):
-                # add the child node to the children nodes
-                childrenNodes.append(childNode)
-            # set the flag to true
-            foundStackMoves = True
+    # foundStackMoves = False
+    # # for each valid move
+    # for move in validMoves:
+    #     # if the move is a stack move
+    #     if move.destinationType == Type[0]:
+    #         # if the move is a stack move
+    #         # create a new node
+    #         childNode = Node(node, move, getNextState(node.gameState, move))
+    #         # set newNode depth
+    #         childNode.depth = node.depth + 1
+    #         # if the child node is not same with other child nodes
+    #         if not sameChild(childNode, childrenNodes):
+    #             # add the child node to the children nodes
+    #             childrenNodes.append(childNode)
+    #         # set the flag to true
+    #         foundStackMoves = True
     # if foundStackMoves:
     #     return childrenNodes
 
@@ -530,7 +533,7 @@ def sameChild(child, childrenNodes):
 
 # define the Breadth First Search function that is used to find the solution
 def BFS(rootNode):
-    # define visited states
+    # define visited states and nodes
     visitedNodes = []
     visitedStates = []
     # define the queue
@@ -557,14 +560,14 @@ def BFS(rootNode):
     # set an execution time meter
     startTime = time.time()
 
-    maxExecutionTime = 30.0
+    maxExecutionTime = 2.0
 
     numbrerOfLoops = 0
     # while the queue is not empty or the goal state is not found
     while len(queue) > 0 and (not solutionFound):
 
         numbrerOfLoops += 1
-        # get the first state in the queue
+        # get the first node in the queue
         if len(queue) > 0:
             currentNode = queue.pop(0)
             currentNodeNumber += 1
@@ -607,7 +610,7 @@ def BFS(rootNode):
             # print execution time in seconds
             print("Execution time: " + str(round(executionTime / 60, 1)) + " minutes")
             print(str(numbrerOfLoops) + " loops were made\n")
-            # return the visited nodes
+            # return the moves made
             return movesMade
 
         else:
@@ -619,18 +622,18 @@ def BFS(rootNode):
                 # for each child node
                 for childNode in childrenNodes:
                     # if the child node is not visited
-                    if not isVisited(visitedStates, childNode):
-                        # add the child node to the queue
-                        queue.append(childNode)
-                        # add the children to the parent node
-                        currentNode.children.append(childNode)
+                    #if not isVisited(visitedStates, childNode):
+                    # add the child node to the queue
+                    queue.append(childNode)
+                    # add the children to the parent node
+                    currentNode.children.append(childNode)
 
-                        lastNodeDepth = childNode.depth
+                    lastNodeDepth = childNode.depth
 
-                        # add the child node to the visited nodes
-                        visitedNodes.append(childNode)
-                        # add the child state to the visited states
-                        visitedStates.append(childNode.gameState)
+                    # add the child node to the visited nodes
+                    #visitedNodes.append(childNode)
+                    # add the child state to the visited states
+                    #visitedStates.append(childNode.gameState)
 
     # find the execution time
     endTime = time.time()
@@ -647,6 +650,7 @@ def BFS(rootNode):
 
 
 # define a function that checks if a game state is equal to another game state
+
 def isEqualState2(state1, state2):
     # find the top cards in the stacks in state 1
     topCardsInStacksState1 = []
@@ -721,7 +725,6 @@ def isEqualState2(state1, state2):
             return False
 
     return True
-    # find which cards are in
 
 
 # define a function to check if a same node is already in queue
@@ -747,6 +750,270 @@ def isVisited(visitedStates, currentNode):
 
     # return false
     return False
+
+
+# implement the Depth First Search function that is used to find the solution using the DFS algorithm.
+def DFS(rootNode):
+    # define visited states and nodes
+    visitedNodes = []
+    visitedStates = []
+
+    # define stack
+    stack = []
+
+    # define moves already made
+    movesMade = []
+
+    # push the root node to the stack
+    stack.append(rootNode)
+
+    # add the root node to the visited nodes
+    visitedNodes.append(rootNode)
+    visitedStates.append(rootNode.gameState)
+
+    # define flag for the loop
+    solutionFound = False
+
+    # set an execution time meter
+    startTime = time.time()
+
+    maxExecutionTime = 30.0
+
+    numbrerOfLoops = 0
+
+    # while the stack is greater than 0 and the solution is not found
+    while len(stack) > 0 and not solutionFound:
+
+        numbrerOfLoops += 1
+        # get the last node added to the stack and remove it from the stack
+        if len(stack) > 0:
+            currentNode = stack.pop(0)
+            currentNodeDepth = currentNode.depth
+            movesMade.append(currentNode.move)
+        else:
+            return movesMade
+
+        endTime = time.time()
+        executionTime = endTime - startTime
+
+        # print current execution time
+
+        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+              + "Current depth: " + str(currentNode.depth)
+              + ". Stack length: " + str(len(stack))
+              + ". Number of visited states: " + str(len(visitedStates))
+              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+
+        # if the execution time is greater than the maximum execution time
+        if round(executionTime / 60, 1) > maxExecutionTime:
+            print("Execution time exceeded  : " + str(maxExecutionTime) + " minutes\n")
+            print("No solution found !!!\n")
+
+            # return the visited nodes
+            return movesMade
+
+        # if the current node is the goal node
+        if isGoalState(currentNode):
+            # set the flag to true
+            solutionFound = True
+            # print("Goal state found")
+            print("Goal state found at depth", currentNode.depth)
+            # find the execution time
+            endTime = time.time()
+            executionTime = endTime - startTime
+
+            # convert the execution time to seconds
+
+            # print execution time in seconds
+            print("Execution time: " + str(round(executionTime / 60, 1)) + " minutes")
+            print(str(numbrerOfLoops) + " loops were made\n")
+            # return the moves made
+            return movesMade
+
+        # if the current node is not the goal node
+        else:
+            # find the children nodes
+            childrenNodes = findNewNodes(currentNode)
+
+            childrenNodesToBeAddedToStack = []
+            # if children nodes are not none
+            if childrenNodes is not None:
+                # for each child node
+                for childNode in childrenNodes:
+                    # if the child node is not visited
+                    if not isVisited(visitedStates, childNode):
+                        # add the child node to children nodes to be added to the stack
+                        childrenNodesToBeAddedToStack.append(childNode)
+                        # add the children to the parent node
+                        currentNode.children.append(childNode)
+
+                        lastNodeDepth = childNode.depth
+
+                        # add the child node to the visited nodes
+                        visitedNodes.append(childNode)
+                        # add the child state to the visited states
+                        visitedStates.append(childNode.gameState)
+
+                childrenNodesToBeAddedToStack.reverse()
+                # for each child node to be added to the stack
+                for childNode in childrenNodesToBeAddedToStack:
+                    # add the child node to the stack
+                    stack.insert(0, childNode)
+
+
+# define a function to calculate the cost of a node
+def calculateCost(node):
+    # find how many cards are in the foundations
+    cardsInFoundations = 0
+    for foundation in node.gameState.foundation:
+        cardsInFoundations += foundation.numberOfCards()
+
+    # find how many free cells are empty
+    emptyFreeCells = 0
+    for freecell in node.gameState.freecell:
+        # if the free cell is empty
+        if freecell.isEmpty():
+            # increment the number of empty free cells
+            emptyFreeCells += 1
+
+    # find how many stacks are empty
+    emptyStacks = 0
+    for stack in node.gameState.stack:
+        # if the stack is empty
+        if stack.isEmpty():
+            # increment the number of empty stacks
+            emptyStacks += 1
+
+    # calculate the cost
+    cost = 52 - cardsInFoundations - emptyFreeCells - emptyStacks
+
+    # return the absolute value of the cost
+    return abs(cost)
+
+
+# implement the Best First Search algorithm
+def bestFirstSearch(rootNode):
+    # create a queue
+    queue = []
+
+    # create a list to store the visited nodes
+    visitedNodes = []
+    # create a list to store the visited states
+    visitedStates = []
+
+    # create a list to store the moves made
+    movesMade = []
+
+    # create a list to store the nodes to be added to the queue
+    nodesToBeAddedToQueue = []
+
+    # add the root node to the queue
+    queue.append(rootNode)
+
+    # add the root node to the visited nodes
+    visitedNodes.append(rootNode)
+    # add the root node to the visited states
+    visitedStates.append(rootNode.gameState)
+
+    # set the flag to false
+    solutionFound = False
+
+    # set the start time
+    startTime = time.time()
+
+    maxExecutionTime = 30.0
+
+    # set the number of loops to 0
+    numbrerOfLoops = 0
+
+    # while the queue is not empty
+    while len(queue) > 0:
+        # increment the number of loops
+        numbrerOfLoops += 1
+        # get the first node in the queue i.e. the node with the lowest cost if the queue is not empty
+        if len(queue) > 0:
+            currentNode = queue.pop(0)
+            currentNodeDepth = currentNode.depth
+            movesMade.append(currentNode.move)
+        else:
+            return movesMade
+
+        endTime = time.time()
+        executionTime = endTime - startTime
+
+        # print current execution time
+
+        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+              + "Current depth: " + str(currentNode.depth)
+              + ". Queue length: " + str(len(queue))
+              + ". Number of visited states: " + str(len(visitedStates))
+              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+
+        # if the execution time is greater than the maximum execution time
+        if round(executionTime / 60, 1) > maxExecutionTime:
+            print("Execution time exceeded  : " + str(maxExecutionTime) + " minutes\n")
+            print("No solution found !!!\n")
+
+            # return the visited nodes
+            return movesMade
+
+        # if the current node is the goal node
+        if isGoalState(currentNode):
+            # set the flag to true
+            solutionFound = True
+            # print("Goal state found")
+            print("Goal state found at depth", currentNode.depth)
+            # find the execution time
+            endTime = time.time()
+            executionTime = endTime - startTime
+
+            # convert the execution time to seconds
+
+            # print execution time in seconds
+            print("Execution time: " + str(round(executionTime / 60, 1)) + " minutes")
+            print(str(numbrerOfLoops) + " loops were made\n")
+            # return the moves made
+            return movesMade
+
+        # if the current node is not the goal node
+        else:
+            # get the children nodes of the current node
+            childrenNodes = findNewNodes(currentNode)
+
+            # if the children nodes are not empty
+            if childrenNodes is not None:
+                # for each child node
+                for childNode in childrenNodes:
+                    # if the child node is not in the visited nodes
+                    if childNode not in visitedNodes:
+                        # calculate the cost of the child node
+                        childNode.cost = calculateCost(childNode)
+
+                        # add the child node to the visited nodes
+                        visitedNodes.append(childNode)
+                        # add the child state to the visited states
+                        visitedStates.append(childNode.gameState)
+                        # add the child node to the queue
+                        queue.append(childNode)
+
+                        # add the child to the parent node
+                        currentNode.children.append(childNode)
+
+            # sort the queue depending on the ascending order of the cost
+            queue.sort(key=lambda x: x.cost)
+
+    # find the execution time
+    endTime = time.time()
+    executionTime = endTime - startTime
+
+    # convert the execution time to seconds
+    executionTime = executionTime * 1000
+    # print execution time in seconds
+    print("Execution time: " + str(executionTime) + " seconds\n")
+    print("No solution found !!!\n")
+
+    # return the visited nodes
+    return movesMade
 
 
 if __name__ == '__main__':
@@ -793,19 +1060,11 @@ if __name__ == '__main__':
         # create the root node of the search tree
         rootNode = Node(None, None, gameState)
         rootNode.depth = 0
+        rootNode.cost = 0
 
         # run the algorithm
-        if sys.argv[1] == "BFS" or sys.argv[1] == "bfs" or sys.argv[1] == "B" or sys.argv[1] == "b":
+        if sys.argv[1] == "BFS" or sys.argv[1] == "bfs" or sys.argv[1] == "B" or sys.argv[1] == "b" or sys.argv[1] == "BREADTH" or sys.argv[1] == "breadth":
             movesMade = BFS(rootNode)
-            # print(visitedNodes) from number 1 to end
-            # if there are more than one visited nodes
-            # if len(movesMade) > 1:
-            #     for move in movesMade[1:]:
-            #         # if move name is not none
-            #         if move.name is not None:
-            #             print(move.name)
-            # else:
-            #     print("No solution")
 
             # write the moves to the output file
             with open(sys.argv[3], 'w', encoding='utf-8') as f:
@@ -823,3 +1082,51 @@ if __name__ == '__main__':
                 else:
                     # write No solution to the output file
                     f.write("No solution")
+
+        elif sys.argv[1] == "DFS" or sys.argv[1] == "dfs" or sys.argv[1] == "D" or sys.argv[1] == "d" or sys.argv[1] == "DEPTH" or sys.argv[1] == "depth":
+            visitedStates = []
+
+            # run the DFS algorithm
+            movesMade = DFS(rootNode)
+
+            # write the moves to the output file
+            with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                # write the number of moves made
+                f.write(str(len(movesMade)) + "\n")
+                # if movesMade is not empty
+                if movesMade is not None:
+                    # for each move in movesMade
+                    for move in movesMade:
+                        # if move name is not none
+                        if move is not None:
+                            # write the move name to the output file
+                            f.write(move.name + "\n")
+
+                else:
+                    # write No solution to the output file
+                    with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                        f.write("No solution")
+
+        elif sys.argv[1] == "BEST" or sys.argv[1] == "best":
+            visitedStates = []
+
+            # run the best first search algorithm
+            movesMade = bestFirstSearch(rootNode)
+
+            # write the moves to the output file
+            with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                # write the number of moves made
+                f.write(str(len(movesMade)) + "\n")
+                # if movesMade is not empty
+                if movesMade is not None:
+                    # for each move in movesMade
+                    for move in movesMade:
+                        # if move name is not none
+                        if move is not None:
+                            # write the move name to the output file
+                            f.write(move.name + "\n")
+
+                else:
+                    # write No solution to the output file
+                    with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                        f.write("No solution")
