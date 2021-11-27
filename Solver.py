@@ -1,16 +1,9 @@
 import copy
 import sys
-import threading
 import time
-from multiprocessing import Process
-
 from dataclasses import dataclass
 
-sys.setrecursionlimit(10000)
 
-
-# implement breadth first search algorithm to solve a freecell solitaire game. The problem data is read from the ifile and the solution is written to the ofile.
-# The input file contains the initial state of the game and the output file contains the solution.
 # The input file is in the following format:
 # Each row is a stack of cards, each card is represented by a character and a number. S for spades, H for hearts, D for diamonds, C for clubs.
 # The number is the rank of the card. The rank of the ace is 1. The rank of the king is 13. The rank of the queen is 12. The rank of the jack is 11.
@@ -39,14 +32,8 @@ sys.setrecursionlimit(10000)
 # The output file should contain the solution to the problem.
 # The game ends when all the cards are in the foundations in the order 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13.
 
-# Create the search tree.
-# The search tree is a tree of all possible moves.
-# The root of the tree is the initial state of the game.
-# Each node of the tree is a move.
-
-
 # defining the class for the card
-@dataclass
+
 class Card:
     def __init__(self, suit, rank):
         self.suit = suit
@@ -60,7 +47,7 @@ class Card:
 
 
 # defining the class for the stack
-@dataclass
+
 class Stack:
     def __init__(self):
         self.cards = []
@@ -98,7 +85,7 @@ class Stack:
 
 
 # defining the class for the freecell
-@dataclass
+
 class FreeCell:
     def __init__(self):
         self.card = None
@@ -136,7 +123,7 @@ class FreeCell:
 
 
 # defining the class for the foundation
-@dataclass
+
 class Foundation:
     def __init__(self):
         self.cards = []
@@ -177,7 +164,7 @@ class Foundation:
 
 
 # defining the class for the game
-@dataclass
+
 class GameState:
     def __init__(self):
         self.freecell = [FreeCell() for _ in range(4)]
@@ -301,7 +288,7 @@ def getValidMoves(gameState):
             # check if the move is a foundation move
             for j in range(4):
                 if foundation[j].isValidMove(stack[i].top()):
-                    move = Move("foundation " + str(stack[i].top().suit) + str(stack[i].top().rank),
+                    move = Move("source " + str(stack[i].top().suit) + str(stack[i].top().rank),
                                 stack[i].top(),
                                 Type[2],
                                 j,
@@ -354,7 +341,7 @@ def getValidMoves(gameState):
             # check if the move is a foundation move
             for j in range(4):
                 if foundation[j].isValidMove(freecell[i].top()):
-                    move = Move("foundation " + str(freecell[i].top().suit) + str(freecell[i].top().rank),
+                    move = Move("source " + str(freecell[i].top().suit) + str(freecell[i].top().rank),
                                 freecell[i].top(),
                                 Type[2],
                                 j,
@@ -523,9 +510,6 @@ def sameChild(child, childrenNodes):
         # if the visited node has the same game state
         if isEqual(otherChild.gameState, child.gameState) or isEqualState2(otherChild.gameState,
                                                                            child.gameState) or otherChild.move == child.move:
-            # if isEqualState2(otherChild.gameState, child.gameState):
-            # if otherChild.move == child.move:
-            # return true
             return True
     # return false
     return False
@@ -560,7 +544,7 @@ def BFS(rootNode):
     # set an execution time meter
     startTime = time.time()
 
-    maxExecutionTime = 2.0
+    maxExecutionTime = 30.0
 
     numbrerOfLoops = 0
     # while the queue is not empty or the goal state is not found
@@ -622,18 +606,18 @@ def BFS(rootNode):
                 # for each child node
                 for childNode in childrenNodes:
                     # if the child node is not visited
-                    #if not isVisited(visitedStates, childNode):
-                    # add the child node to the queue
-                    queue.append(childNode)
-                    # add the children to the parent node
-                    currentNode.children.append(childNode)
+                    if not isVisited(visitedStates, childNode):
+                        # add the child node to the queue
+                        queue.append(childNode)
+                        # add the children to the parent node
+                        currentNode.children.append(childNode)
 
-                    lastNodeDepth = childNode.depth
+                        lastNodeDepth = childNode.depth
 
-                    # add the child node to the visited nodes
-                    #visitedNodes.append(childNode)
-                    # add the child state to the visited states
-                    #visitedStates.append(childNode.gameState)
+                        # add the child node to the visited nodes
+                        visitedNodes.append(childNode)
+                        # add the child state to the visited states
+                        visitedStates.append(childNode.gameState)
 
     # find the execution time
     endTime = time.time()
@@ -727,24 +711,12 @@ def isEqualState2(state1, state2):
     return True
 
 
-# define a function to check if a same node is already in queue
-def sameInQueue(queue, node):
-    # for each node in the queue
-    for n in queue:
-        # if the node is the same
-        if n == node:
-            # return true
-            return True
-    # return false
-    return False
-
-
 # check if visited states contains the game state
 def isVisited(visitedStates, currentNode):
     # for each visited node
     for visitedState in visitedStates:
         # if the visited node has the same game state
-        if isEqual(visitedState, currentNode.gameState) or isEqualState2(visitedState, currentNode.gameState):
+        if isEqualState2(visitedState, currentNode.gameState):
             # return true
             return True
 
@@ -759,16 +731,16 @@ def DFS(rootNode):
     visitedStates = []
 
     # define stack
-    stack = []
+    queue = []
 
     # define moves already made
     movesMade = []
 
-    # push the root node to the stack
-    stack.append(rootNode)
+    # add the root node to the queue
+    queue.append(rootNode)
 
     # add the root node to the visited nodes
-    visitedNodes.append(rootNode)
+    # visitedNodes.append(rootNode)
     visitedStates.append(rootNode.gameState)
 
     # define flag for the loop
@@ -782,12 +754,12 @@ def DFS(rootNode):
     numbrerOfLoops = 0
 
     # while the stack is greater than 0 and the solution is not found
-    while len(stack) > 0 and not solutionFound:
+    while len(queue) > 0 and not solutionFound:
 
         numbrerOfLoops += 1
         # get the last node added to the stack and remove it from the stack
-        if len(stack) > 0:
-            currentNode = stack.pop(0)
+        if len(queue) > 0:
+            currentNode = queue.pop(0)
             currentNodeDepth = currentNode.depth
             movesMade.append(currentNode.move)
         else:
@@ -800,7 +772,7 @@ def DFS(rootNode):
 
         print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
               + "Current depth: " + str(currentNode.depth)
-              + ". Stack length: " + str(len(stack))
+              + ". Stack length: " + str(len(queue))
               + ". Number of visited states: " + str(len(visitedStates))
               + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
@@ -845,12 +817,12 @@ def DFS(rootNode):
                         # add the child node to children nodes to be added to the stack
                         childrenNodesToBeAddedToStack.append(childNode)
                         # add the children to the parent node
-                        currentNode.children.append(childNode)
+                        # currentNode.children.append(childNode)
 
                         lastNodeDepth = childNode.depth
 
                         # add the child node to the visited nodes
-                        visitedNodes.append(childNode)
+                        # visitedNodes.append(childNode)
                         # add the child state to the visited states
                         visitedStates.append(childNode.gameState)
 
@@ -858,7 +830,7 @@ def DFS(rootNode):
                 # for each child node to be added to the stack
                 for childNode in childrenNodesToBeAddedToStack:
                     # add the child node to the stack
-                    stack.insert(0, childNode)
+                    queue.insert(0, childNode)
 
 
 # define a function to calculate the cost of a node
@@ -868,6 +840,18 @@ def calculateCost(node):
     for foundation in node.gameState.foundation:
         cardsInFoundations += foundation.numberOfCards()
 
+    # find how many foundations are empty
+    emptyFoundations = 0
+    for foundation in node.gameState.foundation:
+        if foundation.numberOfCards() == 0:
+            emptyFoundations += 1
+
+    # find how many cards are in the freecells
+    cardsInFreecells = 0
+    for freecell in node.gameState.freecell:
+        if freecell.card is not None:
+            cardsInFreecells += 1
+
     # find how many free cells are empty
     emptyFreeCells = 0
     for freecell in node.gameState.freecell:
@@ -876,19 +860,22 @@ def calculateCost(node):
             # increment the number of empty free cells
             emptyFreeCells += 1
 
-    # find how many stacks are empty
-    emptyStacks = 0
+    # find how many stacks are not empty
+    nonEmptyStacks = 0
     for stack in node.gameState.stack:
-        # if the stack is empty
-        if stack.isEmpty():
-            # increment the number of empty stacks
-            emptyStacks += 1
+        if not stack.isEmpty():
+            nonEmptyStacks += 1
+
+    # find how many cards are in the stacks
+    cardsInStacks = 0
+    for stack in node.gameState.stack:
+        cardsInStacks += stack.numberOfCards()
 
     # calculate the cost
-    cost = 52 - cardsInFoundations - emptyFreeCells - emptyStacks
+    cost = cardsInStacks + cardsInFreecells - cardsInFoundations - nonEmptyStacks
 
-    # return the absolute value of the cost
-    return abs(cost)
+    # return the cost
+    return cost
 
 
 # implement the Best First Search algorithm
@@ -985,19 +972,133 @@ def bestFirstSearch(rootNode):
                 # for each child node
                 for childNode in childrenNodes:
                     # if the child node is not in the visited nodes
-                    if childNode not in visitedNodes:
+                    if not isVisited(visitedStates, childNode):
                         # calculate the cost of the child node
                         childNode.cost = calculateCost(childNode)
 
                         # add the child node to the visited nodes
-                        visitedNodes.append(childNode)
+                        # visitedNodes.append(childNode)
                         # add the child state to the visited states
                         visitedStates.append(childNode.gameState)
                         # add the child node to the queue
                         queue.append(childNode)
 
                         # add the child to the parent node
-                        currentNode.children.append(childNode)
+                        # currentNode.children.append(childNode)
+
+            # sort the queue depending on the ascending order of the cost
+            queue.sort(key=lambda x: x.cost)
+
+    # find the execution time
+    endTime = time.time()
+    executionTime = endTime - startTime
+
+    # convert the execution time to seconds
+    executionTime = executionTime * 1000
+    # print execution time in seconds
+    print("Execution time: " + str(executionTime) + " seconds\n")
+    print("No solution found !!!\n")
+
+    # return the visited nodes
+    return movesMade
+
+# implement the A* algorithm
+def aStar(startState):
+    # create a queue
+    queue = []
+
+    # create a list to store the visited states
+    visitedStates = []
+
+    # create a list to store the moves made
+    movesMade = []
+
+    # create a list to store the nodes to be added to the queue
+    nodesToBeAddedToQueue = []
+
+    # add the root node to the queue
+    queue.append(rootNode)
+
+    # add the root node to the visited states
+    visitedStates.append(rootNode.gameState)
+
+    # set the flag to false
+    solutionFound = False
+
+    # set the start time
+    startTime = time.time()
+
+    maxExecutionTime = 30.0
+
+    # set the number of loops to 0
+    numbrerOfLoops = 0
+
+    # while the queue is not empty
+    while len(queue) > 0:
+        # increment the number of loops
+        numbrerOfLoops += 1
+        # get the first node in the queue i.e. the node with the lowest cost if the queue is not empty
+        if len(queue) > 0:
+            currentNode = queue.pop(0)
+            currentNodeDepth = currentNode.depth
+            movesMade.append(currentNode.move)
+        else:
+            return movesMade
+
+        endTime = time.time()
+        executionTime = endTime - startTime
+
+        # print current execution time
+
+        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+              + "Current depth: " + str(currentNode.depth)
+              + ". Queue length: " + str(len(queue))
+              + ". Number of visited states: " + str(len(visitedStates))
+              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+
+        # if the execution time is greater than the maximum execution time
+        if round(executionTime / 60, 1) > maxExecutionTime:
+            print("Execution time exceeded  : " + str(maxExecutionTime) + " minutes\n")
+            print("No solution found !!!\n")
+
+            # return the visited nodes
+            return movesMade
+
+        # if the current node is the goal node
+        if isGoalState(currentNode):
+            # set the flag to true
+            solutionFound = True
+            # print("Goal state found")
+            print("Goal state found at depth", currentNode.depth)
+            # find the execution time
+            endTime = time.time()
+            executionTime = endTime - startTime
+
+            # convert the execution time to seconds
+
+            # print execution time in seconds
+            print("Execution time: " + str(round(executionTime / 60, 1)) + " minutes")
+            print(str(numbrerOfLoops) + " loops were made\n")
+            # return the moves made
+            return movesMade
+
+        # if the current node is not the goal node
+        else:
+            # get the children nodes of the current node
+            childrenNodes = findNewNodes(currentNode)
+
+            # if the children nodes are not empty
+            if childrenNodes is not None:
+                # for each child node
+                for childNode in childrenNodes:
+                    # if the child node is not in the visited nodes
+                    if not isVisited(visitedStates, childNode):
+                        # calculate the cost of the child node
+                        childNode.cost = calculateCost(childNode)
+                        # add the child state to the visited states
+                        visitedStates.append(childNode.gameState)
+                        # add the child node to the queue
+                        queue.append(childNode)
 
             # sort the queue depending on the ascending order of the cost
             queue.sort(key=lambda x: x.cost)
@@ -1063,7 +1164,8 @@ if __name__ == '__main__':
         rootNode.cost = 0
 
         # run the algorithm
-        if sys.argv[1] == "BFS" or sys.argv[1] == "bfs" or sys.argv[1] == "B" or sys.argv[1] == "b" or sys.argv[1] == "BREADTH" or sys.argv[1] == "breadth":
+        if sys.argv[1] == "BFS" or sys.argv[1] == "bfs" or sys.argv[1] == "B" or sys.argv[1] == "b" or sys.argv[
+            1] == "BREADTH" or sys.argv[1] == "breadth":
             movesMade = BFS(rootNode)
 
             # write the moves to the output file
@@ -1083,7 +1185,8 @@ if __name__ == '__main__':
                     # write No solution to the output file
                     f.write("No solution")
 
-        elif sys.argv[1] == "DFS" or sys.argv[1] == "dfs" or sys.argv[1] == "D" or sys.argv[1] == "d" or sys.argv[1] == "DEPTH" or sys.argv[1] == "depth":
+        elif sys.argv[1] == "DFS" or sys.argv[1] == "dfs" or sys.argv[1] == "D" or sys.argv[1] == "d" or sys.argv[
+            1] == "DEPTH" or sys.argv[1] == "depth":
             visitedStates = []
 
             # run the DFS algorithm
@@ -1130,3 +1233,30 @@ if __name__ == '__main__':
                     # write No solution to the output file
                     with open(sys.argv[3], 'w', encoding='utf-8') as f:
                         f.write("No solution")
+
+        elif sys.argv[1] == "ASTAR" or sys.argv[1] == "astar":
+            visitedStates = []
+
+            # run the A* algorithm
+            movesMade = aStar(rootNode)
+
+            # write the moves to the output file
+            with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                # write the number of moves made
+                f.write(str(len(movesMade)) + "\n")
+                # if movesMade is not empty
+                if movesMade is not None:
+                    # for each move in movesMade
+                    for move in movesMade:
+                        # if move name is not none
+                        if move is not None:
+                            # write the move name to the output file
+                            f.write(move.name + "\n")
+
+                else:
+                    # write No solution to the output file
+                    with open(sys.argv[3], 'w', encoding='utf-8') as f:
+                        f.write("No solution")
+
+        else:
+            print("Invalid command")

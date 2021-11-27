@@ -57,12 +57,12 @@ stack C2 D3
 stack S3 C4
 stack C2 S3
 stack D8 S9
-foundation H1
+source H1
 stack C2 H3
 stack D8 C9
-foundation H2
+source H2
 freecell C2
-foundation H3
+source H3
 stack D8 S9
 stack S3 D4
 stack C4 D5
@@ -672,14 +672,14 @@ stack C2 S3
 stack D2 C3
 freecell H12
 newstack H13
-foundation C1
+source C1
 newstack D9
-foundation C2
+source C2
 stack H9 S10
 stack D2 S3
 stack D9 C10
 newstack D2
-foundation C3
+source C3
 stack S4 C5
 stack D2 S3
 newstack H9
@@ -691,14 +691,14 @@ stack D3 C4
 stack S4 C5
 stack D3 S4
 stack D5 H6
-foundation C4
+source C4
 stack H5 D6
 stack C8 H9
 freecell H13
 newstack D3
 stack S4 D5
 stack D3 S4
-foundation C5
+source C5
 newstack C8
 newstack H9
 stack C8 H9
@@ -714,7 +714,7 @@ stack C8 D9
 newstack H9
 stack C8 H9
 stack H5 D6
-foundation C6
+source C6
 stack C8 D9
 stack H9 S10
 newstack H11
@@ -992,7 +992,7 @@ newstack D5
 stack H6 S7
 stack D5 H6
 newstack D2
-foundation C7
+source C7
 stack D7 H8
 stack D2 S3
 newstack D5
@@ -1000,7 +1000,7 @@ stack H6 D7
 stack D5 H6
 newstack D2
 newstack S7
-foundation C8
+source C8
 stack H9 C10
 stack S8 H9
 stack D9 S10
@@ -1189,8 +1189,8 @@ newstack H12
 newstack C13
 stack H12 C13
 newstack S10
-foundation S1
-foundation S2
+source S1
+source S2
 stack S10 H11
 newstack H12
 newstack D7
@@ -1233,7 +1233,7 @@ stack S8 D9
 stack D7 S8
 newstack H9
 newstack D2
-foundation S3
+source S3
 stack H9 S10
 newstack D7
 stack S8 H9
@@ -1274,19 +1274,19 @@ stack D5 H6
 newstack D5
 newstack D3
 stack D5 H6
-foundation S4
+source S4
 stack D4 H5
-foundation S5
+source S5
 newstack H9
 stack D5 S6
-foundation S6
+source S6
 newstack D5
-foundation S6
+source S6
 stack H6 D7
 stack D5 H6
 newstack H9
-foundation S7
-foundation S7
+source S7
+source S7
 newstack H8
 newstack D4
 newstack H11
@@ -1339,9 +1339,9 @@ newstack H9
 stack S10 D11
 stack H9 S10
 newstack D5
-foundation S8
+source S8
 stack S8 H9
-foundation S8
+source S8
 newstack D9
 stack C10 H11
 stack D9 C10
@@ -1355,10 +1355,10 @@ newstack D7
 stack H8 D9
 stack D7 H8
 newstack H9
-foundation S9
-foundation S10
+source S9
+source S10
 stack H10 D11
-foundation S11
+source S11
 freecell H9
 newstack H10
 stack H10 C11
@@ -1387,12 +1387,12 @@ newstack D11
 stack H10 D11
 stack C11 H12
 stack H10 C11
-foundation S12
-foundation S13
+source S12
+source S13
 stack H10 D11
-foundation D1
+source D1
 newstack H10
-foundation D2
+source D2
 newstack H8
 stack D9 H10
 newstack C11
@@ -1403,7 +1403,7 @@ newstack H9
 stack C10 D11
 stack H9 C10
 newstack H8
-foundation D3
+source D3
 freecell H8
 newstack H9
 stack C10 H11
@@ -1426,10 +1426,10 @@ stack D9 H10
 newstack H9
 newstack D5
 newstack D9
-foundation D4
+source D4
 stack H9 C10
 newstack H10
-foundation D5
+source D5
 stack H10 C11
 newstack D11
 stack H10 D11
@@ -1478,19 +1478,19 @@ stack C10 H11
 stack H6 D7
 newstack H5
 newstack C10
-foundation D6
+source D6
 newstack H6
 stack C10 H11
-foundation D7
+source D7
 newstack H8
 newstack C10
 stack D9 C10
 stack H8 D9
 newstack H10
 newstack H7
-foundation D8
+source D8
 stack H8 C9
-foundation D9
+source D9
 stack C10 H11
 newstack H10
 stack H9 C10
@@ -1501,40 +1501,40 @@ newstack C10
 stack H9 C10
 newstack H10
 newstack H8
-foundation C9
+source C9
 stack H9 D10
-foundation C10
+source C10
 newstack H10
-foundation C11
+source C11
 stack H12 C13
 newstack H9
-foundation D10
-foundation H4
+source D10
+source H4
 stack H12 D13
-foundation D11
+source D11
 freecell H8
 newstack H12
-foundation C12
+source C12
 freecell H12
-foundation C13
+source C13
 newstack D13
-foundation D12
-foundation D13
+source D12
+source D13
 newstack H8
 freecell H7
 newstack H13
 freecell H8
 newstack H12
 freecell H13
-foundation H5
+source H5
 freecell H12
-foundation H6
-foundation H7
+source H6
+source H7
 freecell H11
-foundation H8
-foundation H9
-foundation H10
-foundation H11
+source H8
+source H9
+source H10
+source H11
 newstack H13
-foundation H12
-foundation H13
+source H12
+source H13
