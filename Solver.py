@@ -1,7 +1,9 @@
 import copy
 import sys
 import time
-from dataclasses import dataclass
+
+# define max execution time constant in minutes
+MAX_EXECUTION_TIME = 15.0
 
 
 # The input file is in the following format:
@@ -256,18 +258,108 @@ def isEqual(state1, state2):
     return True
 
 
+# define a function that checks if a game state is approximately equal to another game state
+
+def isEqualState2(state1, state2):
+    # find the top cards in the stacks in state 1
+    topCardsInStacksState1 = []
+    for stack in state1.stack:
+        topCardsInStacksState1.append(stack.top())
+
+    # find the top cards in the stacks in state 2
+    topCardsInStacksState2 = []
+    for stack in state2.stack:
+        topCardsInStacksState2.append(stack.top())
+
+    # for each top stack card in state 1
+    for topCard in topCardsInStacksState1:
+        # if the top stack card is not in state 2
+        if topCard not in topCardsInStacksState2:
+            # return false
+            return False
+
+    # for each top stack card in state 2
+    for topCard in topCardsInStacksState2:
+        # if the top stack card is not in state 1
+        if topCard not in topCardsInStacksState1:
+            # return false
+            return False
+
+    # find the top cards in the foundations in state 1
+    topCardsInFoundationsState1 = []
+    for foundation in state1.foundation:
+        topCardsInFoundationsState1.append(foundation.top())
+
+    # find the top cards in the foundations in state 2
+    topCardsInFoundationsState2 = []
+    for foundation in state2.foundation:
+        topCardsInFoundationsState2.append(foundation.top())
+
+    # for each top foundation card in state 1
+    for topCard in topCardsInFoundationsState1:
+        # if the top foundation card is not in state 2
+        if topCard not in topCardsInFoundationsState2:
+            # return false
+            return False
+
+    # for each top foundation card in state 2
+    for topCard in topCardsInFoundationsState2:
+        # if the top foundation card is not in state 1
+        if topCard not in topCardsInFoundationsState1:
+            # return false
+            return False
+
+    # find the cards in freecells in state 1
+    cardsInFreecellsState1 = []
+    for freecell in state1.freecell:
+        cardsInFreecellsState1.append(freecell.top())
+
+    # find the cards in freecells in state 2
+    cardsInFreecellsState2 = []
+    for freecell in state2.freecell:
+        cardsInFreecellsState2.append(freecell.top())
+
+    # for each card in freecells in state 1
+    for card in cardsInFreecellsState1:
+        # if the card is not in freecells in state 2
+        if card not in cardsInFreecellsState2:
+            # return false
+            return False
+
+    # for each card in freecells in state 2
+    for card in cardsInFreecellsState2:
+        # if the card is not in freecells in state 1
+        if card not in cardsInFreecellsState1:
+            # return false
+            return False
+
+    return True
+
+
+# check if visited states contains the game state
+def isVisited(visitedStates, currentNode):
+    # for each visited node
+    for visitedState in visitedStates:
+        # if the visited node has the same game state
+        if isEqualState2(visitedState, currentNode.gameState):
+            # return true
+            return True
+
+    # return false
+    return False
+
+
 # defining the class of the tree node
 class Node:
     def __init__(self, parent, move, gameState):
         self.parent = parent
         self.move = move
-        self.children = []
         self.gameState = gameState
         self.depth = 0
         self.cost = 0
 
     def __eq__(self, other):
-        return isEqual(self.gameState, other.gameState)
+        return isEqualState2(self.gameState, other.gameState)
 
 
 Type = ["stack", "freecell", "foundation"]
@@ -408,11 +500,11 @@ def getNextState(currentGameState, move):
     nextGameState.makeMove(move)
 
     # compare the next game state with the current game state
-    if isEqual(nextGameState, currentGameState):
-        print("The states are equal")
-
-    # return the next game state
-    return nextGameState
+    if not isEqualState2(nextGameState, currentGameState):
+        # return the next game state
+        return nextGameState
+    else:
+        return None
 
 
 # define the function used to find new nodes
@@ -427,89 +519,32 @@ def findNewNodes(node):
     if validMoves is None:
         return None
 
-    # foundFoundationMoves = False
-    #
-    # # for each valid move
-    # for move in validMoves:
-    #     # check if at least one is a foundation move
-    #     if move.destinationType == Type[2]:
-    #         # if the move is a foundation move
-    #         # create a new node
-    #         childNode = Node(node, move, getNextState(node.gameState, move))
-    #         # set newNode depth
-    #         childNode.depth = node.depth + 1
-    #         # if the child node is not same with other child nodes
-    #         if not sameChild(childNode, childrenNodes):
-    #             # add the child node to the children nodes
-    #             childrenNodes.append(childNode)
-    #         # set the flag to true
-    #         foundFoundationMoves = True
-    # if foundFoundationMoves:
-    #     return childrenNodes
-    #
-    # foundFreecellMoves = False
-    # # for each valid move
-    # for move in validMoves:
-    #     # if the move is a freecell move
-    #     if move.destinationType == Type[1]:
-    #         # if the move is a freecell move
-    #         # create a new node
-    #         childNode = Node(node, move, getNextState(node.gameState, move))
-    #         # set newNode depth
-    #         childNode.depth = node.depth + 1
-    #         # if the child node is not same with other child nodes
-    #         if not sameChild(childNode, childrenNodes):
-    #             # add the child node to the children nodes
-    #             childrenNodes.append(childNode)
-    #         # set the flag to true
-    #         foundFreecellMoves = True
-    # if foundFreecellMoves:
-    #     return childrenNodes
-
-    # foundStackMoves = False
-    # # for each valid move
-    # for move in validMoves:
-    #     # if the move is a stack move
-    #     if move.destinationType == Type[0]:
-    #         # if the move is a stack move
-    #         # create a new node
-    #         childNode = Node(node, move, getNextState(node.gameState, move))
-    #         # set newNode depth
-    #         childNode.depth = node.depth + 1
-    #         # if the child node is not same with other child nodes
-    #         if not sameChild(childNode, childrenNodes):
-    #             # add the child node to the children nodes
-    #             childrenNodes.append(childNode)
-    #         # set the flag to true
-    #         foundStackMoves = True
-    # if foundStackMoves:
-    #     return childrenNodes
-
     # for each valid move
     for move in validMoves:
         # find the next state
         nextState = getNextState(node.gameState, move)
 
-        # create a new child node
-        childNode = Node(node, move, nextState)
-        childNode.depth = node.depth + 1
+        if nextState is not None:
 
-        # if the child node is not same with other child nodes
-        if not sameChild(childNode, childrenNodes):
-            # add the child node to the children nodes
-            childrenNodes.append(childNode)
+            # create a new child node
+            childNode = Node(node, move, nextState)
+            childNode.depth = node.depth + 1
+
+            # if the child node is not same with other child nodes
+            if not sameChild(childNode, childrenNodes):
+                # add the child node to the children nodes
+                childrenNodes.append(childNode)
 
     # return the children nodes
     return childrenNodes
 
 
-# define a function used to check if a child is the same as other children
+# define a function used to check if a child is the same as other children of a node
 def sameChild(child, childrenNodes):
     # for each visited node
     for otherChild in childrenNodes:
         # if the visited node has the same game state
-        if isEqual(otherChild.gameState, child.gameState) or isEqualState2(otherChild.gameState,
-                                                                           child.gameState) or otherChild.move == child.move:
+        if isEqualState2(otherChild.gameState, child.gameState) or otherChild.move == child.move:
             return True
     # return false
     return False
@@ -517,9 +552,9 @@ def sameChild(child, childrenNodes):
 
 # define the Breadth First Search function that is used to find the solution
 def BFS(rootNode):
-    # define visited states and nodes
-    visitedNodes = []
+    # define visited states
     visitedStates = []
+
     # define the queue
     queue = []
 
@@ -532,8 +567,7 @@ def BFS(rootNode):
     # add the root state to the queue
     queue.append(rootNode)
 
-    # add the root node to the visited nodes
-    visitedNodes.append(rootNode)
+    # add the root state to the visited states
     visitedStates.append(rootNode.gameState)
 
     # define flag for the loop
@@ -544,7 +578,7 @@ def BFS(rootNode):
     # set an execution time meter
     startTime = time.time()
 
-    maxExecutionTime = 30.0
+    maxExecutionTime = MAX_EXECUTION_TIME
 
     numbrerOfLoops = 0
     # while the queue is not empty or the goal state is not found
@@ -565,11 +599,11 @@ def BFS(rootNode):
 
         # print current execution time
 
-        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
-              + "Current depth: " + str(currentNode.depth)
-              + ". Queue length: " + str(len(queue))
-              + ". Number of visited states: " + str(len(visitedStates))
-              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+        # print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+        #       + "Current depth: " + str(currentNode.depth)
+        #       + ". Queue length: " + str(len(queue))
+        #       + ". Number of visited states: " + str(len(visitedStates))
+        #       + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
@@ -609,13 +643,9 @@ def BFS(rootNode):
                     if not isVisited(visitedStates, childNode):
                         # add the child node to the queue
                         queue.append(childNode)
-                        # add the children to the parent node
-                        currentNode.children.append(childNode)
 
                         lastNodeDepth = childNode.depth
 
-                        # add the child node to the visited nodes
-                        visitedNodes.append(childNode)
                         # add the child state to the visited states
                         visitedStates.append(childNode.gameState)
 
@@ -633,101 +663,9 @@ def BFS(rootNode):
     return movesMade
 
 
-# define a function that checks if a game state is equal to another game state
-
-def isEqualState2(state1, state2):
-    # find the top cards in the stacks in state 1
-    topCardsInStacksState1 = []
-    for stack in state1.stack:
-        topCardsInStacksState1.append(stack.top())
-
-    # find the top cards in the stacks in state 2
-    topCardsInStacksState2 = []
-    for stack in state2.stack:
-        topCardsInStacksState2.append(stack.top())
-
-    # for each top stack card in state 1
-    for topCard in topCardsInStacksState1:
-        # if the top stack card is not in state 2
-        if topCard not in topCardsInStacksState2:
-            # return false
-            return False
-
-    # for each top stack card in state 2
-    for topCard in topCardsInStacksState2:
-        # if the top stack card is not in state 1
-        if topCard not in topCardsInStacksState1:
-            # return false
-            return False
-
-    # find the top cards in the foundations in state 1
-    topCardsInFoundationsState1 = []
-    for foundation in state1.foundation:
-        topCardsInFoundationsState1.append(foundation.top())
-
-    # find the top cards in the foundations in state 2
-    topCardsInFoundationsState2 = []
-    for foundation in state2.foundation:
-        topCardsInFoundationsState2.append(foundation.top())
-
-    # for each top foundation card in state 1
-    for topCard in topCardsInFoundationsState1:
-        # if the top foundation card is not in state 2
-        if topCard not in topCardsInFoundationsState2:
-            # return false
-            return False
-
-    # for each top foundation card in state 2
-    for topCard in topCardsInFoundationsState2:
-        # if the top foundation card is not in state 1
-        if topCard not in topCardsInFoundationsState1:
-            # return false
-            return False
-
-    # find the cards in freecells in state 1
-    cardsInFreecellsState1 = []
-    for freecell in state1.freecell:
-        cardsInFreecellsState1.append(freecell.top())
-
-    # find the cards in freecells in state 2
-    cardsInFreecellsState2 = []
-    for freecell in state2.freecell:
-        cardsInFreecellsState2.append(freecell.top())
-
-    # for each card in freecells in state 1
-    for card in cardsInFreecellsState1:
-        # if the card is not in freecells in state 2
-        if card not in cardsInFreecellsState2:
-            # return false
-            return False
-
-    # for each card in freecells in state 2
-    for card in cardsInFreecellsState2:
-        # if the card is not in freecells in state 1
-        if card not in cardsInFreecellsState1:
-            # return false
-            return False
-
-    return True
-
-
-# check if visited states contains the game state
-def isVisited(visitedStates, currentNode):
-    # for each visited node
-    for visitedState in visitedStates:
-        # if the visited node has the same game state
-        if isEqualState2(visitedState, currentNode.gameState):
-            # return true
-            return True
-
-    # return false
-    return False
-
-
 # implement the Depth First Search function that is used to find the solution using the DFS algorithm.
 def DFS(rootNode):
-    # define visited states and nodes
-    visitedNodes = []
+    # define visited states
     visitedStates = []
 
     # define stack
@@ -739,8 +677,7 @@ def DFS(rootNode):
     # add the root node to the queue
     queue.append(rootNode)
 
-    # add the root node to the visited nodes
-    # visitedNodes.append(rootNode)
+    # add the root state to the visited states
     visitedStates.append(rootNode.gameState)
 
     # define flag for the loop
@@ -749,7 +686,7 @@ def DFS(rootNode):
     # set an execution time meter
     startTime = time.time()
 
-    maxExecutionTime = 30.0
+    maxExecutionTime = MAX_EXECUTION_TIME
 
     numbrerOfLoops = 0
 
@@ -770,11 +707,11 @@ def DFS(rootNode):
 
         # print current execution time
 
-        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
-              + "Current depth: " + str(currentNode.depth)
-              + ". Stack length: " + str(len(queue))
-              + ". Number of visited states: " + str(len(visitedStates))
-              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+        # print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+        #       + "Current depth: " + str(currentNode.depth)
+        #       + ". Stack length: " + str(len(queue))
+        #       + ". Number of visited states: " + str(len(visitedStates))
+        #       + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
@@ -816,13 +753,9 @@ def DFS(rootNode):
                     if not isVisited(visitedStates, childNode):
                         # add the child node to children nodes to be added to the stack
                         childrenNodesToBeAddedToStack.append(childNode)
-                        # add the children to the parent node
-                        # currentNode.children.append(childNode)
 
                         lastNodeDepth = childNode.depth
 
-                        # add the child node to the visited nodes
-                        # visitedNodes.append(childNode)
                         # add the child state to the visited states
                         visitedStates.append(childNode.gameState)
 
@@ -883,8 +816,6 @@ def bestFirstSearch(rootNode):
     # create a queue
     queue = []
 
-    # create a list to store the visited nodes
-    visitedNodes = []
     # create a list to store the visited states
     visitedStates = []
 
@@ -897,8 +828,6 @@ def bestFirstSearch(rootNode):
     # add the root node to the queue
     queue.append(rootNode)
 
-    # add the root node to the visited nodes
-    visitedNodes.append(rootNode)
     # add the root node to the visited states
     visitedStates.append(rootNode.gameState)
 
@@ -908,8 +837,7 @@ def bestFirstSearch(rootNode):
     # set the start time
     startTime = time.time()
 
-    maxExecutionTime = 30.0
-
+    maxExecutionTime = MAX_EXECUTION_TIME
     # set the number of loops to 0
     numbrerOfLoops = 0
 
@@ -930,11 +858,11 @@ def bestFirstSearch(rootNode):
 
         # print current execution time
 
-        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
-              + "Current depth: " + str(currentNode.depth)
-              + ". Queue length: " + str(len(queue))
-              + ". Number of visited states: " + str(len(visitedStates))
-              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+        # print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+        #       + "Current depth: " + str(currentNode.depth)
+        #       + ". Queue length: " + str(len(queue))
+        #       + ". Number of visited states: " + str(len(visitedStates))
+        #       + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
@@ -975,16 +903,10 @@ def bestFirstSearch(rootNode):
                     if not isVisited(visitedStates, childNode):
                         # calculate the cost of the child node
                         childNode.cost = calculateCost(childNode)
-
-                        # add the child node to the visited nodes
-                        # visitedNodes.append(childNode)
                         # add the child state to the visited states
                         visitedStates.append(childNode.gameState)
                         # add the child node to the queue
                         queue.append(childNode)
-
-                        # add the child to the parent node
-                        # currentNode.children.append(childNode)
 
             # sort the queue depending on the ascending order of the cost
             queue.sort(key=lambda x: x.cost)
@@ -1002,6 +924,7 @@ def bestFirstSearch(rootNode):
     # return the visited nodes
     return movesMade
 
+
 # implement the A* algorithm
 def aStar(startState):
     # create a queue
@@ -1012,9 +935,6 @@ def aStar(startState):
 
     # create a list to store the moves made
     movesMade = []
-
-    # create a list to store the nodes to be added to the queue
-    nodesToBeAddedToQueue = []
 
     # add the root node to the queue
     queue.append(rootNode)
@@ -1028,7 +948,7 @@ def aStar(startState):
     # set the start time
     startTime = time.time()
 
-    maxExecutionTime = 30.0
+    maxExecutionTime = MAX_EXECUTION_TIME
 
     # set the number of loops to 0
     numbrerOfLoops = 0
@@ -1050,11 +970,11 @@ def aStar(startState):
 
         # print current execution time
 
-        print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
-              + "Current depth: " + str(currentNode.depth)
-              + ". Queue length: " + str(len(queue))
-              + ". Number of visited states: " + str(len(visitedStates))
-              + ". Number of moves made: " + str(len(movesMade)), end="\n")
+        # print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
+        #       + "Current depth: " + str(currentNode.depth)
+        #       + ". Queue length: " + str(len(queue))
+        #       + ". Number of visited states: " + str(len(visitedStates))
+        #       + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
@@ -1094,7 +1014,7 @@ def aStar(startState):
                     # if the child node is not in the visited nodes
                     if not isVisited(visitedStates, childNode):
                         # calculate the cost of the child node
-                        childNode.cost = calculateCost(childNode)
+                        childNode.cost = calculateCost(childNode) + childNode.depth
                         # add the child state to the visited states
                         visitedStates.append(childNode.gameState)
                         # add the child node to the queue
@@ -1123,20 +1043,17 @@ if __name__ == '__main__':
         print("Usage: python Solver.py <Algorithm> <inputFileName> <outputFilename>")
         sys.exit(-1)
     else:
-        ifile = [line.replace("\n", "").split() for line in open(sys.argv[2], 'r', encoding='utf-8')]
-        print(ifile, "\n")
-        # ofile = sys.argv[len(sys.argv) - 0]
+        infile = [line.replace("\n", "").split() for line in open(sys.argv[2], 'r', encoding='utf-8')]
+        print(infile, "\n")
 
         # Create the game.
         gameState = GameState()
 
         # Populate the game stacks.
-        for i in range(len(ifile)):
-            for j in range(len(ifile[i])):
+        for i in range(len(infile)):
+            for j in range(len(infile[i])):
                 # create a new card
-                card = Card(ifile[i][j][0], int(ifile[i][j][1:]))
-                # print(card)
-                # print(card.suit, card.rank, "\n")
+                card = Card(infile[i][j][0], int(infile[i][j][1:]))
 
                 # initially populate the stacks with the cards
                 if gameState.stack[0].numberOfCards() < 7:
