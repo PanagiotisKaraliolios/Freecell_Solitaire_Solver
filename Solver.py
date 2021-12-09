@@ -5,6 +5,9 @@ import time
 # define max execution time constant in minutes
 MAX_EXECUTION_TIME = 15.0
 
+# define a global variable to store the rank of the highest card
+highest_rank = 0
+
 
 # The input file is in the following format:
 # Each row is a stack of cards, each card is represented by a character and a number. S for spades, H for hearts, D for diamonds, C for clubs.
@@ -205,18 +208,26 @@ class GameState:
 
 # define aa function that checks if a Node is a win state
 def isGoalState(node):
-    # if at least one foundation is not full, return False
+    # if at least one foundation is empty, return False
     for i in range(len(node.gameState.foundation)):
-        # if the foundation does not have 13 cards, return False
-        if node.gameState.foundation[i].numberOfCards() != 13:
+        # if the foundation does not have as many cards as the highest rank, return False
+        if node.gameState.foundation[i].numberOfCards() != highest_rank or node.gameState.foundation[i].isEmpty():
             return False
-        if node.gameState.foundation[i].isEmpty():
+    # if all foundations are not empty, check if all stacks are empty
+    for i in range(len(node.gameState.stack)):
+        if not node.gameState.stack[i].isEmpty():
             return False
-    # if all foundations are full, check if the top card of each foundation is the higher rank card
-    for i in range(len(node.gameState.foundation)):
-        if node.gameState.foundation[i].top().rank != 13:
+    # if all stacks are empty, check if all freecells are empty
+    for i in range(len(node.gameState.freecell)):
+        if not node.gameState.freecell[i].isEmpty():
             return False
+    # if all freecells are empty, return True
     return True
+
+    # for i in range(len(node.gameState.foundation)):
+    #     if node.gameState.foundation[i].top().rank != 13:
+    #         return False
+    # return True
 
 
 # deifine a function to compare two game states and return true if they are equal
@@ -600,10 +611,10 @@ def BFS(rootNode):
         # print current execution time
 
         # print("Current execution time: " + str(round(executionTime / 60, 1)) + " minutes. "
-        #       + "Current depth: " + str(currentNode.depth)
-        #       + ". Queue length: " + str(len(queue))
-        #       + ". Number of visited states: " + str(len(visitedStates))
-        #       + ". Number of moves made: " + str(len(movesMade)), end="\n")
+        #	   + "Current depth: " + str(currentNode.depth)
+        #      + ". Queue length: " + str(len(queue))
+        #      + ". Number of visited states: " + str(len(visitedStates))
+        #      + ". Number of moves made: " + str(len(movesMade)), end="\n")
 
         # if the execution time is greater than the maximum execution time
         if round(executionTime / 60, 1) > maxExecutionTime:
@@ -1054,26 +1065,33 @@ if __name__ == '__main__':
             for j in range(len(infile[i])):
                 # create a new card
                 card = Card(infile[i][j][0], int(infile[i][j][1:]))
+                # add the card to the game stack i
+                gameState.stack[i].add(card)
 
-                # initially populate the stacks with the cards
-                if gameState.stack[0].numberOfCards() < 7:
-                    gameState.stack[0].add(card)
-                elif gameState.stack[1].numberOfCards() < 7:
-                    gameState.stack[1].add(card)
-                elif gameState.stack[2].numberOfCards() < 7:
-                    gameState.stack[2].add(card)
-                elif gameState.stack[3].numberOfCards() < 7:
-                    gameState.stack[3].add(card)
-                elif gameState.stack[4].numberOfCards() < 6:
-                    gameState.stack[4].add(card)
-                elif gameState.stack[5].numberOfCards() < 6:
-                    gameState.stack[5].add(card)
-                elif gameState.stack[6].numberOfCards() < 6:
-                    gameState.stack[6].add(card)
-                elif gameState.stack[7].numberOfCards() < 6:
-                    gameState.stack[7].add(card)
-                else:
-                    print("Error: All stacks are full !! Try a different input file.\n")
+                # if the card rank is greater than the highest rank global variable
+                if card.rank > highest_rank:
+                    # set the highest rank global variable to the card rank
+                    highest_rank = card.rank
+
+                # # initially populate the stacks with the cards
+                # if gameState.stack[0].numberOfCards() < 7:
+                #     gameState.stack[0].add(card)
+                # elif gameState.stack[1].numberOfCards() < 7:
+                #     gameState.stack[1].add(card)
+                # elif gameState.stack[2].numberOfCards() < 7:
+                #     gameState.stack[2].add(card)
+                # elif gameState.stack[3].numberOfCards() < 7:
+                #     gameState.stack[3].add(card)
+                # elif gameState.stack[4].numberOfCards() < 6:
+                #     gameState.stack[4].add(card)
+                # elif gameState.stack[5].numberOfCards() < 6:
+                #     gameState.stack[5].add(card)
+                # elif gameState.stack[6].numberOfCards() < 6:
+                #     gameState.stack[6].add(card)
+                # elif gameState.stack[7].numberOfCards() < 6:
+                #     gameState.stack[7].add(card)
+                # else:
+                #     print("Error: All stacks are full !! Try a different input file.\n")
 
         # create the root node of the search tree
         rootNode = Node(None, None, gameState)
